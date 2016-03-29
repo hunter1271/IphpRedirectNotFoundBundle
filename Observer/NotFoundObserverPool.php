@@ -2,19 +2,15 @@
 
 namespace Iphp\RedirectNotFoundBundle\Observer;
 
-
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ContainerAware;
 
 class NotFoundObserverPool extends ContainerAware
 {
-
-
     /**
      * @var array
      */
     protected $observersByPath = array();
-
 
     public function __construct(ContainerInterface $container)
     {
@@ -22,36 +18,62 @@ class NotFoundObserverPool extends ContainerAware
     }
 
 
+    /**
+     * @param array $observers
+     */
     public function setObservers($observers)
     {
         foreach ($observers as $serviceId => $path)
         {
-            if (!isset($this->observersByPath[$path]))  $this->observersByPath[$path] = [];
+            if (!isset($this->observersByPath[$path])) {
+                $this->observersByPath[$path] = [];
+            }
 
             $this->observersByPath[$path][] = $serviceId;
         }
-
     }
 
-
-    public function findRedirect ($uri)
+    /**
+     * @param array $subscribers
+     */
+    public function addSubscribers(array $subscribers)
     {
+        foreach ($subscribers as $serviceId => $paths) {
+            foreach ($paths as $path) {
+                $this->observersByPath[$path][] = $serviceId;
+            }
+        }
+    }
 
-        foreach ($this->observersByPath as $path => $serviceIds)
-        {
-            if (substr ($uri,0, strlen($path)) == $path) return $this->findRedirectInServices ($uri, $serviceIds);
+    /**
+     * @param string $uri
+     *
+     * @return string|null
+     */
+    public function findRedirect($uri)
+    {
+        foreach ($this->observersByPath as $path => $serviceIds) {
+            if (substr($uri, 0, strlen($path)) == $path) {
+                return $this->findRedirectInServices($uri, $serviceIds);
+            }
         }
 
         return null;
     }
 
-
-    public function findRedirectInServices ($uri,  $serviceIds)
+    /**
+     * @param string $uri
+     * @param array  $serviceIds
+     *
+     * @return string|null
+     */
+    public function findRedirectInServices ($uri, array $serviceIds)
     {
-        foreach ($serviceIds as $serviceId)
-        {
-            $redirectUri =  $this->container->get($serviceId)->findRedirect ($uri);
-            if (!is_null($redirectUri)) return $redirectUri;
+        foreach ($serviceIds as $serviceId) {
+            $redirectUri =  $this->container->get($serviceId)->findRedirect($uri);
+            if (!is_null($redirectUri)) {
+                return $redirectUri;
+            }
         }
 
        return null;
