@@ -56,7 +56,7 @@ class AddDependencyCallsCompilerPass implements CompilerPassInterface
         }
 
         if (count($observers)) {
-            $pool->addMethodCall('setObservers',  [$observers]);
+            $pool->addMethodCall('addObservers',  [$observers]);
         }
     }
 

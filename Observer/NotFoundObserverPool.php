@@ -21,14 +21,10 @@ class NotFoundObserverPool extends ContainerAware
     /**
      * @param array $observers
      */
-    public function setObservers($observers)
+    public function addObservers($observers)
     {
         foreach ($observers as $serviceId => $path)
         {
-            if (!isset($this->observersByPath[$path])) {
-                $this->observersByPath[$path] = [];
-            }
-
             $this->observersByPath[$path][] = $serviceId;
         }
     }
